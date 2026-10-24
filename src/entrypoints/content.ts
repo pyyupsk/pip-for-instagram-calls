@@ -14,6 +14,8 @@ const UNSUPPORTED = 'เบราว์เซอร์นี้ไม่รอ�
 export default defineContentScript({
   matches: ['https://www.instagram.com/call/*'],
   main() {
+    if (document.getElementById('instagram-pip')) return;
+
     const ui = createPipButton();
     const pip = createPip({
       document,
