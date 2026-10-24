@@ -1,20 +1,25 @@
 {
   "name": "ig-pip",
-  "description": "Native picture-in-picture for video on Instagram call pages.",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
+  "description": "Native picture-in-picture for video on Instagram call pages.",
   "type": "module",
   "scripts": {
-    "dev": "wxt",
-    "dev:firefox": "wxt -b firefox",
     "build": "wxt build",
     "build:firefox": "wxt build -b firefox",
-    "zip": "wxt zip",
-    "zip:firefox": "wxt zip -b firefox",
     "compile": "tsc --noEmit",
-    "postinstall": "wxt prepare"
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint .",
+    "postinstall": "wxt prepare",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox"
   },
   "devDependencies": {
+    "oxfmt": "^0.74.0",
+    "oxlint": "^1.89.0",
     "typescript": "^5.9.3",
     "vite": "^8.1.5",
     "web-ext": "^10.5.0",
