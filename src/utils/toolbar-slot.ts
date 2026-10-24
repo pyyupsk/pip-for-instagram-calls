@@ -1,6 +1,6 @@
 const FULLSCREEN = /^(Enter|Exit) full screen$/;
 
-export type ToolbarSlot = Readonly<{ toolbar: Element; slot: Element }>;
+export type ToolbarSlot = Readonly<{ toolbar: Element; slot: Element | null }>;
 
 // shortcut: anchors on the English call controls; add locales after testing them.
 export function findToolbarSlot(controls: Iterable<Element>): ToolbarSlot | null {
@@ -18,4 +18,17 @@ export function findToolbarSlot(controls: Iterable<Element>): ToolbarSlot | null
 
   const toolbar = slot.parentElement;
   return toolbar ? { toolbar, slot } : null;
+}
+
+// Label-free fallback for non-English call UI: the first ancestor of the video that
+// holds a row of controls.
+export function findToolbarByVideo(video: Element | null): ToolbarSlot | null {
+  let node = video?.parentElement ?? null;
+  for (let depth = 0; node && depth < 8; depth += 1) {
+    if (node.querySelectorAll('button,[role="button"]').length >= 3) {
+      return { toolbar: node, slot: null };
+    }
+    node = node.parentElement;
+  }
+  return null;
 }

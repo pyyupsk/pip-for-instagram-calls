@@ -1,7 +1,7 @@
 import { createPipButton } from '@/components/pip-button/pip-button';
 import { createPip, type PipFailure } from '@/lib/pip';
 import { pickVideo } from '@/utils/pick-video';
-import { findToolbarSlot } from '@/utils/toolbar-slot';
+import { findToolbarByVideo, findToolbarSlot } from '@/utils/toolbar-slot';
 
 const MESSAGES: Record<PipFailure, string> = {
   'no-video': 'ยังไม่มีภาพวิดีโอสำหรับเปิด PiP',
@@ -24,16 +24,21 @@ function startSession() {
     typeof HTMLVideoElement.prototype.requestPictureInPicture === 'function';
 
   function place() {
-    const slot = findToolbarSlot(document.querySelectorAll('button,[role="button"]'));
-    if (!slot || slot.toolbar === document.body) {
+    const target =
+      findToolbarSlot(document.querySelectorAll('button,[role="button"]')) ??
+      findToolbarByVideo(document.querySelector('video'));
+    if (!target || target.toolbar === document.body) {
       ui.hideTooltip();
       ui.host.style.display = 'none';
       if (!ui.host.isConnected) document.body.append(ui.host);
       return;
     }
-    if (ui.host.parentElement !== slot.toolbar || ui.host.nextSibling !== slot.slot) {
+    const before = target.slot;
+    const placed = before ? ui.host.nextSibling === before : ui.host.nextSibling === null;
+    if (ui.host.parentElement !== target.toolbar || !placed) {
       ui.hideTooltip();
-      slot.toolbar.insertBefore(ui.host, slot.slot);
+      if (before) target.toolbar.insertBefore(ui.host, before);
+      else target.toolbar.append(ui.host);
     }
     ui.host.style.display = 'inline-block';
   }
