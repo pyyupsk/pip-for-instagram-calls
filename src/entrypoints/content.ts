@@ -4,12 +4,12 @@ import { pickVideo } from '@/utils/pick-video';
 import { findToolbarByVideo, findToolbarSlot } from '@/utils/toolbar-slot';
 
 const MESSAGES: Record<PipFailure, string> = {
-  'no-video': 'ยังไม่มีภาพวิดีโอสำหรับเปิด PiP',
-  denied: 'เปิดไม่ได้ กรุณากดปุ่มหน้าต่างลอยอีกครั้ง',
-  failed: 'เปิดหรือปิดหน้าต่างลอยไม่ได้ ลองอีกครั้ง',
+  'no-video': 'No video in this call yet',
+  denied: 'Could not open it, click the button again',
+  failed: 'Could not open or close the floating window, try again',
 };
 
-const UNSUPPORTED = 'เบราว์เซอร์นี้ไม่รองรับ video Picture-in-Picture';
+const UNSUPPORTED = 'This browser does not support video Picture-in-Picture';
 
 function startSession() {
   const ui = createPipButton();
