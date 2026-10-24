@@ -1,8 +1,8 @@
 {
-  "name": "ig-pip",
+  "name": "pip-for-instagram-calls",
   "version": "0.0.0",
   "private": true,
-  "description": "Native picture-in-picture for video on Instagram call pages.",
+  "description": "Picture in Picture (PiP) for Instagram video calls. Keep the video in a floating window while you use other tabs.",
   "type": "module",
   "scripts": {
     "build": "wxt build",
