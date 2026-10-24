@@ -1,6 +1,6 @@
 export default defineContentScript({
-  matches: ['*://*.google.com/*'],
+  matches: ['https://www.instagram.com/call/*'],
   main() {
-    console.log('Hello content.');
+    console.log('ig-pip loaded');
   },
 });
