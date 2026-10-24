@@ -6,14 +6,6 @@ export type Pip = Readonly<{
   dispose: () => void;
 }>;
 
-async function closeQuietly(doc: Document) {
-  try {
-    await doc.exitPictureInPicture();
-  } catch {
-    // the window is already gone
-  }
-}
-
 export function createPip(options: {
   document: Document;
   select: () => HTMLVideoElement | undefined;
@@ -84,7 +76,7 @@ export function createPip(options: {
     disposed = true;
     doc.removeEventListener('enterpictureinpicture', onEnter, true);
     doc.removeEventListener('leavepictureinpicture', onLeave, true);
-    if (target && doc.pictureInPictureElement === target) void closeQuietly(doc);
+    // no exit here: the window keeps playing, and the element goes away with the call
     releaseTarget();
   }
 

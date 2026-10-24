@@ -1,4 +1,4 @@
-import { createPipButton } from '@/components/pip-button/pip-button';
+import { PIP_BUTTON_ID, createPipButton } from '@/components/pip-button/pip-button';
 import { createPip, type PipFailure } from '@/lib/pip';
 import { pickVideo } from '@/utils/pick-video';
 import { findToolbarByVideo, findToolbarSlot } from '@/utils/toolbar-slot';
@@ -48,7 +48,7 @@ function startSession() {
     ui.showNotice('');
     ui.setDisabled(true);
     const result = await pip.toggle();
-    ui.setDisabled(!supported);
+    ui.setDisabled(false);
     if (!result.ok) ui.showNotice(MESSAGES[result.error]);
   }
 
@@ -75,6 +75,8 @@ function startSession() {
 export default defineContentScript({
   matches: ['https://www.instagram.com/*'],
   main() {
+    if (document.getElementById(PIP_BUTTON_ID)) return;
+
     let session: ReturnType<typeof startSession> | null = null;
     let scheduled = false;
 

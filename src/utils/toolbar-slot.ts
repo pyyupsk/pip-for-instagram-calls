@@ -20,8 +20,7 @@ export function findToolbarSlot(controls: Iterable<Element>): ToolbarSlot | null
   return toolbar ? { toolbar, slot } : null;
 }
 
-// Label-free fallback for non-English call UI: the first ancestor of the video that
-// holds a row of controls.
+// Label-free fallback for non-English call UI.
 export function findToolbarByVideo(video: Element | null): ToolbarSlot | null {
   let node = video?.parentElement ?? null;
   for (let depth = 0; node && depth < 8; depth += 1) {

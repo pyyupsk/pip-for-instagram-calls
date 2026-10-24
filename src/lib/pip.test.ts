@@ -179,6 +179,18 @@ describe('createPip', () => {
     expect(target.disablePictureInPicture).toBe(true);
   });
 
+  test('leaves an open window running when it is disposed', async () => {
+    const doc = fakeDocument();
+    const target = video(doc);
+    const { pip } = setup({ doc, video: target });
+
+    await pip.toggle();
+    pip.dispose();
+
+    expect(doc.pictureInPictureElement).toBe(target);
+    expect(doc.exits).toBe(0);
+  });
+
   test('removes its listeners on dispose', () => {
     const doc = fakeDocument();
     const { pip } = setup({ video: video(doc) });
