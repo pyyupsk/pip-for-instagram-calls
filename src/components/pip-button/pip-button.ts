@@ -1,3 +1,5 @@
+export const PIP_BUTTON_ID = 'instagram-pip';
+
 const TOOLTIP_DELAY = 300;
 
 const STYLES = `
@@ -47,7 +49,7 @@ function need<T extends Element>(root: ParentNode, selector: string): T {
 
 export function createPipButton(): PipButton {
   const host = document.createElement('div');
-  host.id = 'instagram-pip';
+  host.id = PIP_BUTTON_ID;
   host.style.cssText =
     'display:none;position:relative;vertical-align:top;margin-top:8px;padding:4px;width:40px;height:40px;box-sizing:content-box;pointer-events:auto;';
 
