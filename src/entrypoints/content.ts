@@ -1,4 +1,4 @@
-import { PIP_BUTTON_ID, createPipButton } from '@/components/pip-button/pip-button';
+import { createPipButton } from '@/components/pip-button/pip-button';
 import { createPip, type PipFailure } from '@/lib/pip';
 import { pickVideo } from '@/utils/pick-video';
 import { findToolbarSlot } from '@/utils/toolbar-slot';
@@ -11,69 +11,100 @@ const MESSAGES: Record<PipFailure, string> = {
 
 const UNSUPPORTED = 'เบราว์เซอร์นี้ไม่รองรับ video Picture-in-Picture';
 
-export default defineContentScript({
-  matches: ['https://www.instagram.com/call/*'],
-  main() {
-    if (document.getElementById(PIP_BUTTON_ID)) return;
+function startSession() {
+  const ui = createPipButton();
+  const pip = createPip({
+    document,
+    select: () => pickVideo(document.querySelectorAll('video')),
+    onChange: (active) => ui.setActive(active),
+  });
 
-    const ui = createPipButton();
-    const pip = createPip({
-      document,
-      select: () => pickVideo(document.querySelectorAll('video')),
-      onChange: (active) => ui.setActive(active),
-    });
+  const supported =
+    document.pictureInPictureEnabled &&
+    typeof HTMLVideoElement.prototype.requestPictureInPicture === 'function';
 
-    const supported =
-      document.pictureInPictureEnabled &&
-      typeof HTMLVideoElement.prototype.requestPictureInPicture === 'function';
-
-    let disposed = false;
-    const observer = new MutationObserver(() => mount());
-
-    function mount() {
-      if (disposed) return;
-      const slot = findToolbarSlot(document.querySelectorAll('button,[role="button"]'));
-      if (!slot || slot.toolbar === document.body) {
-        ui.hideTooltip();
-        ui.host.style.display = 'none';
-        if (!ui.host.isConnected) document.body.append(ui.host);
-        return;
-      }
-      if (ui.host.parentElement !== slot.toolbar || ui.host.nextSibling !== slot.slot) {
-        ui.hideTooltip();
-        slot.toolbar.insertBefore(ui.host, slot.slot);
-      }
-      ui.host.style.display = 'inline-block';
-    }
-
-    async function onToggle() {
+  function place() {
+    const slot = findToolbarSlot(document.querySelectorAll('button,[role="button"]'));
+    if (!slot || slot.toolbar === document.body) {
       ui.hideTooltip();
-      ui.showNotice('');
-      ui.setDisabled(true);
-      const result = await pip.toggle();
-      ui.setDisabled(!supported);
-      if (!result.ok) ui.showNotice(MESSAGES[result.error]);
+      ui.host.style.display = 'none';
+      if (!ui.host.isConnected) document.body.append(ui.host);
+      return;
     }
+    if (ui.host.parentElement !== slot.toolbar || ui.host.nextSibling !== slot.slot) {
+      ui.hideTooltip();
+      slot.toolbar.insertBefore(ui.host, slot.slot);
+    }
+    ui.host.style.display = 'inline-block';
+  }
 
-    function cleanup() {
-      disposed = true;
-      observer.disconnect();
-      removeEventListener('pagehide', cleanup);
+  async function onToggle() {
+    ui.hideTooltip();
+    ui.showNotice('');
+    ui.setDisabled(true);
+    const result = await pip.toggle();
+    ui.setDisabled(!supported);
+    if (!result.ok) ui.showNotice(MESSAGES[result.error]);
+  }
+
+  if (supported) {
+    ui.button.addEventListener('click', onToggle);
+  } else {
+    ui.setDisabled(true);
+    ui.showNotice(UNSUPPORTED);
+  }
+
+  document.body.append(ui.host);
+  place();
+
+  return {
+    place,
+    dispose() {
       ui.button.removeEventListener('click', onToggle);
       pip.dispose();
       ui.dispose();
+    },
+  };
+}
+
+export default defineContentScript({
+  matches: ['https://www.instagram.com/*'],
+  main() {
+    let session: ReturnType<typeof startSession> | null = null;
+    let scheduled = false;
+
+    function sync() {
+      if (location.pathname.startsWith('/call/')) {
+        if (session) session.place();
+        else session = startSession();
+      } else if (session) {
+        session.dispose();
+        session = null;
+      }
     }
 
-    if (supported) {
-      ui.button.addEventListener('click', onToggle);
-      addEventListener('pagehide', cleanup);
-    } else {
-      ui.setDisabled(true);
-      ui.showNotice(UNSUPPORTED);
+    // Instagram navigates client-side, so a page load is not the only way into a call.
+    function schedule() {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        sync();
+      });
     }
 
-    document.body.append(ui.host);
+    const observer = new MutationObserver(schedule);
+
+    function onPageHide() {
+      observer.disconnect();
+      session?.dispose();
+      session = null;
+    }
+
     observer.observe(document.body, { childList: true, subtree: true });
-    mount();
+    addEventListener('popstate', schedule);
+    addEventListener('pagehide', onPageHide, { once: true });
+
+    sync();
   },
 });
