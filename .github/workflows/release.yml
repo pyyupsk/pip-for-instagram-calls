@@ -50,6 +50,9 @@ jobs:
       DRY_RUN: ${{ github.ref_type != 'tag' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # changelogithub reads every commit since the previous tag.
+          fetch-depth: 0
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: ${{ env.BUN_VERSION }}
@@ -73,8 +76,13 @@ jobs:
           CHROME_EXTENSION_ID: ppcpjpglgfphilkaaeklgibdjijllijk
           CHROME_PUBLISHER_ID: 52ae2609-c00e-40f2-86d3-4516977a05dc
           CHROME_SERVICE_ACCOUNT_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
-      - name: Attach the zip to a GitHub release
+      - name: Write the GitHub release notes
         if: env.DRY_RUN == 'false'
-        run: gh release create "$GITHUB_REF_NAME" .output/*-chrome.zip --generate-notes --verify-tag
+        run: bun x changelogithub@15.0.5
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Attach the zip to the GitHub release
+        if: env.DRY_RUN == 'false'
+        run: gh release upload "$GITHUB_REF_NAME" .output/*-chrome.zip
         env:
           GH_TOKEN: ${{ github.token }}
