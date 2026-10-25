@@ -11,8 +11,8 @@ Picture in Picture (PiP) for [Instagram](https://www.instagram.com) video calls.
 - One button in the call toolbar, next to Settings and Full screen
 - Uses the browser's own picture-in-picture window
 - Picks the largest playing video
-- Follows Instagram's in-page navigation into calls
-- No data collected, no network requests
+- Works when Instagram opens a call without reloading the page
+- Collects no data and makes no network requests
 
 ## Usage
 
@@ -20,14 +20,14 @@ Start a video call on instagram.com. Click the picture-in-picture button at the 
 
 The window shows video only. An audio-only call has no video to show.
 
-## Build Locally
+## Build locally
 
 ```bash
 bun install
 bun run build
 ```
 
-Load `.output/chrome-mv3` as an unpacked extension in `chrome://extensions`.
+In `chrome://extensions`, turn on Developer mode. Then click Load unpacked and select `.output/chrome-mv3`.
 
 ## Release
 
@@ -36,11 +36,11 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The [release workflow](./.github/workflows/release.yml) submits the tag to the Chrome Web Store. The tag must match `version` in `package.json`.
+The tag must match `version` in `package.json`. The [release workflow](./.github/workflows/release.yml) then submits that version to the Chrome Web Store.
 
 ## Why?
 
-Instagram turns off the right-click menu and disables picture-in-picture on its call video. The browser can still float that video, but the page gives you no way to ask for it. This extension adds the missing button.
+Instagram turns off the right-click menu and disables picture-in-picture on its call video. The browser can still play that video in a floating window, but the page has no control to open it. This extension adds that control.
 
 ## License
 
