@@ -10,4 +10,10 @@ export default defineConfig({
     permissions: ['scripting'],
     host_permissions: ['https://www.instagram.com/*'],
   },
+  hooks: {
+    // The Lucide icon's ISC notice must ship with every copy.
+    'build:publicAssets': (wxt, files) => {
+      files.push({ absoluteSrc: `${wxt.config.root}/LICENSE`, relativeDest: 'LICENSE' });
+    },
+  },
 });
