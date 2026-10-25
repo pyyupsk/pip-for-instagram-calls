@@ -1,0 +1,80 @@
+name: Release
+
+# A tag `v<version>` submits that version to the Chrome Web Store. It goes live
+# when the review passes. A manual run only checks access to the store.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  BUN_VERSION: 1.4.4
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - run: bun install --frozen-lockfile
+      - run: bun run compile
+      - run: bun run lint
+      - run: bun run format:check
+      - run: bun test
+      - name: Tag matches package.json version
+        if: github.ref_type == 'tag'
+        run: |
+          version="$(jq -r .version package.json)"
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $version"
+            exit 1
+          fi
+
+  submit:
+    needs: check
+    runs-on: ubuntu-24.04
+    environment: chrome-web-store
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      DRY_RUN: ${{ github.ref_type != 'tag' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - run: bun install --frozen-lockfile
+      - run: bun run zip
+      - id: auth
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          create_credentials_file: false
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/chromewebstore
+      - name: Submit to the Chrome Web Store
+        run: |
+          args=(--chrome-zip .output/*-chrome.zip)
+          if [ "$DRY_RUN" = true ]; then args+=(--dry-run); fi
+          bun x wxt submit "${args[@]}"
+        env:
+          CHROME_API_VERSION: v2
+          CHROME_EXTENSION_ID: ppcpjpglgfphilkaaeklgibdjijllijk
+          CHROME_PUBLISHER_ID: 52ae2609-c00e-40f2-86d3-4516977a05dc
+          CHROME_SERVICE_ACCOUNT_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+      - name: Attach the zip to a GitHub release
+        if: env.DRY_RUN == 'false'
+        run: gh release create "$GITHUB_REF_NAME" .output/*-chrome.zip --generate-notes --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}
