@@ -29,14 +29,6 @@ export function createPip(options: {
     if (!active) releaseTarget();
   }
 
-  function onEnter() {
-    sync();
-  }
-
-  function onLeave() {
-    sync();
-  }
-
   async function toggle(): Promise<PipResult> {
     if (busy || disposed) return { ok: true };
     busy = true;
@@ -71,13 +63,13 @@ export function createPip(options: {
     }
   }
 
-  doc.addEventListener('enterpictureinpicture', onEnter, true);
-  doc.addEventListener('leavepictureinpicture', onLeave, true);
+  doc.addEventListener('enterpictureinpicture', sync, true);
+  doc.addEventListener('leavepictureinpicture', sync, true);
 
   function dispose() {
     disposed = true;
-    doc.removeEventListener('enterpictureinpicture', onEnter, true);
-    doc.removeEventListener('leavepictureinpicture', onLeave, true);
+    doc.removeEventListener('enterpictureinpicture', sync, true);
+    doc.removeEventListener('leavepictureinpicture', sync, true);
     // no exit here: the window keeps playing, and the element goes away with the call
     releaseTarget();
   }

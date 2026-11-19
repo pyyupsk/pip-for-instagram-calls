@@ -86,20 +86,12 @@ export function createPipButton(): PipButton {
     }, TOOLTIP_DELAY);
   }
 
-  function onPointerEnter() {
-    queueTooltip();
-  }
-
-  function onFocus() {
-    queueTooltip();
-  }
-
   function onKeyDown(event: KeyboardEvent) {
     if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') hideTooltip();
   }
 
-  button.addEventListener('pointerenter', onPointerEnter);
-  button.addEventListener('focus', onFocus);
+  button.addEventListener('pointerenter', queueTooltip);
+  button.addEventListener('focus', queueTooltip);
   button.addEventListener('pointerleave', hideTooltip);
   button.addEventListener('pointerdown', hideTooltip);
   button.addEventListener('blur', hideTooltip);
@@ -127,8 +119,8 @@ export function createPipButton(): PipButton {
   function dispose() {
     disposed = true;
     hideTooltip();
-    button.removeEventListener('pointerenter', onPointerEnter);
-    button.removeEventListener('focus', onFocus);
+    button.removeEventListener('pointerenter', queueTooltip);
+    button.removeEventListener('focus', queueTooltip);
     button.removeEventListener('pointerleave', hideTooltip);
     button.removeEventListener('pointerdown', hideTooltip);
     button.removeEventListener('blur', hideTooltip);
