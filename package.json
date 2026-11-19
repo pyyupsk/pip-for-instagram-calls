@@ -6,17 +6,14 @@
   "type": "module",
   "scripts": {
     "build": "wxt build",
-    "build:firefox": "wxt build -b firefox",
     "compile": "tsc --noEmit",
     "dev": "wxt",
-    "dev:firefox": "wxt -b firefox",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "lint": "oxlint .",
     "postinstall": "wxt prepare",
     "test": "bun test",
-    "zip": "wxt zip",
-    "zip:firefox": "wxt zip -b firefox"
+    "zip": "wxt zip"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4",
