@@ -138,6 +138,18 @@ describe('createPip', () => {
     expect(target.disablePictureInPicture).toBe(true);
   });
 
+  test('reports a failure when the window does not close', async () => {
+    const doc = fakeDocument();
+    const target = video(doc);
+    doc.exitPictureInPicture = async () => {
+      throw new Error('InvalidStateError');
+    };
+    const { pip } = setup({ doc, video: target });
+
+    await pip.toggle();
+    expect(await pip.toggle()).toEqual({ ok: false, error: 'failed' });
+  });
+
   test('blocks overlapping requests', async () => {
     const gate = deferred();
     const doc = fakeDocument();

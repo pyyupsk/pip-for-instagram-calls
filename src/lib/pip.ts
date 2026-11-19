@@ -63,6 +63,8 @@ export function createPip(options: {
 
       if (disposed && doc.pictureInPictureElement === video) await doc.exitPictureInPicture();
       return { ok: true };
+    } catch {
+      return { ok: false, error: 'failed' };
     } finally {
       busy = false;
       if (!disposed) sync();
