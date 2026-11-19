@@ -75,7 +75,10 @@ function startSession() {
 export default defineContentScript({
   matches: ['https://www.instagram.com/*'],
   main() {
-    if (document.getElementById(PIP_BUTTON_ID)) return;
+    // The background script injects again on install and update. The id check catches 1.0.0 copies.
+    const root = document.documentElement;
+    if (root.dataset.instagramPip || document.getElementById(PIP_BUTTON_ID)) return;
+    root.dataset.instagramPip = 'on';
 
     let session: ReturnType<typeof startSession> | null = null;
     let scheduled = false;

@@ -1,5 +1,5 @@
 async function injectIntoOpenCalls() {
-  const tabs = await browser.tabs.query({ url: 'https://www.instagram.com/call/*' });
+  const tabs = await browser.tabs.query({ url: 'https://www.instagram.com/*' });
   await Promise.all(
     tabs.map(async (tab) => {
       if (tab.id === undefined) return;
